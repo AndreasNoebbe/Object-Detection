@@ -64,10 +64,21 @@ def process_video(video_path, model, output_path=None, threshold=0.5): # Added o
                 label = f"Class: {classes[i]} Score: {scores[i]:.2f}" # Keep COCO class IDs for now
                 cv2.putText(frame, label, (left, top - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
-        if video_writer:
-            video_writer.write(frame)
+        # Resize frame for display if it's too large
+        display_width = 1024 # Target width for display
+        original_height, original_width = frame.shape[:2]
 
-        cv2.imshow('Object Detection', frame)
+        if original_width > display_width:
+            aspect_ratio = original_width / original_height
+            display_height = int(display_width / aspect_ratio)
+            display_frame = cv2.resize(frame, (display_width, display_height), interpolation=cv2.INTER_AREA)
+        else:
+            display_frame = frame # Use original frame if it's already smaller than display_width
+
+        if video_writer:
+            video_writer.write(frame) # Save the original, full-resolution frame
+
+        cv2.imshow('Object Detection', display_frame) # Show the resized frame
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
